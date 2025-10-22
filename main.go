@@ -3,18 +3,25 @@ import "fmt"
 import "net/http"
 import "encoding/json"
 import "io"
+import "os"
 
 func main() {
-    var urlTemplate,method = "https://api.telegram.org/bot%s/%s?timeout=%s&offset=%s&limit=1","getUpdates"
+    var urlTemplate = "https://api.telegram.org/bot%s/%s"
+    var urlReceiveTemplate = fmt.Sprintf(urlTemplate+"?timeout=%s&offset=%s&limit=1",BOT_TOKEN,"getUpdates",TIMEOUT,"%d")
+    var urlSendTemplate = fmt.Sprintf(urlTemplate+"?chat_id=%s&text=%s",BOT_TOKEN,"sendMessage","%d","%s")
     var offset = 0
-    var url string
     var data []byte
     var responseRaw *http.Response
     var err error
-    urlTemplate = fmt.Sprintf(urlTemplate,BOT_TOKEN,method,TIMEOUT,"%d")
+    data,err = os.ReadFile("allowed.json")
+    if err!=nil {
+        fmt.Println(err)
+        return
+    }
+    var allowedUsers map[string]string
+    err = json.Unmarshal(data,&allowedUsers)
     for ;true; {
-        url = fmt.Sprintf(urlTemplate,offset)
-        responseRaw, err = http.Get(url)
+        responseRaw, err = http.Get(fmt.Sprintf(urlReceiveTemplate,offset))
         if err != nil {
             fmt.Println(err)
             continue
@@ -38,5 +45,12 @@ func main() {
         offset = dataJson.Result[0].UpdateID+1
         fmt.Println(dataJson.Result[0].Message.From.Username)
         fmt.Println(dataJson.Result[0].Message.Text,"\n")
+        if _,ok := allowedUsers[dataJson.Result[0].Message.From.Username]; !ok {
+            _, err = http.Get(fmt.Sprintf(urlSendTemplate,dataJson.Result[0].Message.Chat.ID,"you are not allowed to do this"))
+            if err!=nil {
+                fmt.Println(err)
+            }
+            continue
+        }
     }
 }

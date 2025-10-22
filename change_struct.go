@@ -14,7 +14,7 @@ var template_link = "location /%s {\n\treturn 302 %s;\n}\n"
 var template_file = "location /%s {\n\troot %s;\n\tindex %s;\n}\n"
 
 func (self *r_change) load(filename string) (error){
-    var data,fileErr = os.ReadFile(filename)
+    var data,fileErr = os.ReadFile(PATH_TO_RESOURCES+filename)
     if fileErr!=nil {
         return fileErr
     }
