@@ -1,0 +1,13 @@
+{
+	"Links_dict": {
+		"monkey_as_link": "https://www.pinterest.com/pin/189432728049515638/",
+		"rickroll": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+		"sliva": "https://www.youtube.com/watch?v=x89tTcYJd9A"
+	},
+	"Files_dict": {
+		"monkey_as_image": "monkey.png",
+		"test1": "test1.html",
+		"test2": "test2.html",
+		"test3": "test3.html"
+	}
+}
