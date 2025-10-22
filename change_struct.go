@@ -14,25 +14,25 @@ var template_link = "location /%s {\n\treturn 302 %s;\n}\n"
 var template_file = "location /%s {\n\troot %s;\n\tindex %s;\n}\n"
 
 func (self *r_change) load(filename string) (error){
-    var data,fileErr = os.ReadFile(PATH_TO_RESOURCES+filename)
-    if fileErr!=nil {
-        return fileErr
+    var data,err = os.ReadFile(PATH_TO_RESOURCES+filename)
+    if err!=nil {
+        return err
     }
-    var jsonErr = json.Unmarshal(data,self)
-    if jsonErr!=nil {
-        return jsonErr
+    err = json.Unmarshal(data,self)
+    if err!=nil {
+        return err
     }
     return nil
 }
 
 func (self *r_change) dump(filename string) (error){
-    var data,jsonErr = json.MarshalIndent(self,"","\t")
-    if jsonErr!=nil {
-        return jsonErr
+    var data,err = json.MarshalIndent(self,"","\t")
+    if err!=nil {
+        return err
     }
-    var fileErr = os.WriteFile(PATH_TO_RESOURCES+filename,data,0644)
-    if fileErr!=nil {
-        return fileErr
+    err = os.WriteFile(PATH_TO_RESOURCES+filename,data,0644)
+    if err!=nil {
+        return err
     }
     return nil
 }
@@ -49,6 +49,9 @@ func (self *r_change) change(name string) (error){
     var data = []byte(s)
     os.WriteFile(PATH_TO_NGINX+SITE_CONFIG_NAME,data,0644)
     var cmd = exec.Command("nginx", "-s", "reload")
-    cmd.Run()
+    var err = cmd.Run()
+    if err!=nil {
+        return err
+    }
     return nil
 }
