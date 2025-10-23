@@ -55,3 +55,8 @@ func (self *r_change) change(name string) (error){
     }
     return nil
 }
+
+type command struct{
+    Number_of_args int
+    Description string
+}

@@ -1,5 +1,4 @@
 package main
-//import "encoding/json"
 
 type Response struct {
         Ok     bool     `json:"ok"`

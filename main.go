@@ -6,6 +6,7 @@ import "io"
 import "os"
 import "os/exec"
 import "strings"
+import "net/url"
 
 func main() {
     var urlTemplate = "https://api.telegram.org/bot%s/%s"
@@ -18,6 +19,12 @@ func main() {
     var reactionToCommand string
     var command_arr []string
     var err error
+    var changeObj r_change
+    err = changeObj.load("resources.json")
+    if err!=nil {
+        fmt.Println(err)
+        return
+    }
     data,err = os.ReadFile("allowed.json")
     if err!=nil {
         fmt.Println(err)
@@ -29,6 +36,7 @@ func main() {
         fmt.Println(err)
         return
     }
+    fmt.Println("The program has started")
     for ;true; {
         responseRaw, err = http.Get(fmt.Sprintf(urlReceiveTemplate,offset))
         if err != nil {
@@ -62,10 +70,10 @@ func main() {
         }
         command_arr = strings.Split(dataJson.Result[0].Message.Text," ")
         reactionToCommand = ""
-        if _,ok := COMMANDS[command_arr[0]]; ok && (len(command_arr)!=COMMANDS[command_arr[0]]) {
-            if len(command_arr)>COMMANDS[command_arr[0]] {
+        if _,ok := COMMANDS[command_arr[0]]; ok && (len(command_arr)!=COMMANDS[command_arr[0]].Number_of_args) {
+            if len(command_arr)>COMMANDS[command_arr[0]].Number_of_args {
                 reactionToCommand = "too much arguments for this command"
-            } else if len(command_arr)<COMMANDS[command_arr[0]]{
+            } else if len(command_arr)<COMMANDS[command_arr[0]].Number_of_args{
                 reactionToCommand = "too few arguments for this command"
             }
             _, err = http.Get(fmt.Sprintf(urlSendTemplate,dataJson.Result[0].Message.Chat.ID,reactionToCommand))
@@ -76,9 +84,11 @@ func main() {
         }
         switch(command_arr[0]){
             case "/start":
-                reactionToCommand = "/start not implemented yet"
+                reactionToCommand = "Hello! This bot are capable of changing/adding/removal of resources to which leadsspecial qr-code"
             case "/help":
-                reactionToCommand = "/help not implemented yet"
+                for key, value := range COMMANDS {
+                    reactionToCommand += fmt.Sprintf("%s - args %d %s\n",key,value.Number_of_args-1,value.Description)
+                }
             case "/change":
                 reactionToCommand = "/change not implemented yet"
             case "/add_link":
@@ -88,7 +98,12 @@ func main() {
             case "/remove":
                 reactionToCommand = "/remove not implemented yet"
             case "/show_list":
-                reactionToCommand = "/show_list not implemented yet"
+                for key, value := range changeObj.Links_dict {
+                    reactionToCommand += key+"\t-\t"+value+"\n"
+                }
+                for key, value := range changeObj.Files_dict {
+                    reactionToCommand += key+"\t-\t"+value+"\n"
+                }
             case "/reboot_nginx":
                 var cmd = exec.Command("nginx", "-s", "reload")
                 err = cmd.Run()
@@ -100,7 +115,7 @@ func main() {
             default:
                 reactionToCommand = "there is no such command"
         }
-        _, err = http.Get(fmt.Sprintf(urlSendTemplate,dataJson.Result[0].Message.Chat.ID,reactionToCommand))
+        _, err = http.Get(fmt.Sprintf(urlSendTemplate,dataJson.Result[0].Message.Chat.ID,url.PathEscape(reactionToCommand)))
         if err!=nil {
             fmt.Println(err)
             continue
