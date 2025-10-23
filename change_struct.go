@@ -8,6 +8,7 @@ import "errors"
 type r_change struct{
     Links_dict map[string]string
     Files_dict map[string]string
+    Current_resource string
 }
 
 var template_link = "location /%s {\n\treturn 302 %s;\n}\n"
@@ -38,6 +39,10 @@ func (self *r_change) dump(filename string) (error){
 }
 
 func (self *r_change) change(name string) (error){
+    if self.Current_resource == name {
+        return nil
+    }
+    self.Current_resource = name
     var s string
     if _, ok := self.Links_dict[name]; ok {
         s = fmt.Sprintf(template_link,SITE_LOCATION_NAME,self.Links_dict[name])

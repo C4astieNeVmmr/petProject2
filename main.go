@@ -20,12 +20,12 @@ func main() {
     var command_arr []string
     var err error
     var changeObj r_change
-    err = changeObj.load("resources.json")
+    err = changeObj.load(PATH_TO_RESOURCES+"resources.json")
     if err!=nil {
         fmt.Println(err)
         return
     }
-    data,err = os.ReadFile("allowed.json")
+    data,err = os.ReadFile(PATH_TO_ALLOWED_ACCOUNTS+"allowed.json")
     if err!=nil {
         fmt.Println(err)
         return
@@ -90,17 +90,37 @@ func main() {
                     reactionToCommand += fmt.Sprintf("%s - args %d %s\n",key,value.Number_of_args-1,value.Description)
                 }
             case "/change":
-                reactionToCommand = "/change not implemented yet"
+                err = changeObj.change(command_arr[1])
+                if err!=nil {
+                    fmt.Println(err)
+                    continue
+                }
+                reactionToCommand = "resource changed"
             case "/add_link":
-                reactionToCommand = "/add_link not implemented yet"
+                changeObj.Links_dict[command_arr[1]] = command_arr[2]
+                err = changeObj.dump(PATH_TO_RESOURCES+"resources.json")
+                if err!=nil {
+                    fmt.Println(err)
+                    continue
+                }
+                reactionToCommand = "link added"
             case "/add_file":
                 reactionToCommand = "/add_file not implemented yet"
             case "/remove":
-                reactionToCommand = "/remove not implemented yet"
+                delete(changeObj.Links_dict,command_arr[1])
+                delete(changeObj.Files_dict,command_arr[1])
+                err = changeObj.dump(PATH_TO_RESOURCES+"resources.json")
+                if err!=nil {
+                    fmt.Println(err)
+                    continue
+                }
+                reactionToCommand = "resource removed"
             case "/show_list":
+                reactionToCommand = "links:\n"
                 for key, value := range changeObj.Links_dict {
                     reactionToCommand += key+"\t-\t"+value+"\n"
                 }
+                reactionToCommand += "\nfiles:\n"
                 for key, value := range changeObj.Files_dict {
                     reactionToCommand += key+"\t-\t"+value+"\n"
                 }
